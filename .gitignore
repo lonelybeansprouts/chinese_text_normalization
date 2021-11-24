@@ -1,2 +1,4 @@
 *~
 *.far
+*.fst
+thrax/src/cn_cpp/build

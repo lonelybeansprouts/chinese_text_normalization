@@ -18,4 +18,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -fpermissive -Wno-sign-comp
 add_executable(test test.cc)
 
 # 链接库文件
-target_link_libraries(test fst)
+target_link_libraries(test fst dl)

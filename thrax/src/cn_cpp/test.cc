@@ -6,26 +6,9 @@
 
 
 
-fst::Fst<fst::StdArc> * LoadFst(const std::string& fst)
-{
-
-  try {
-		std::istringstream is(fst, std::ios_base::in | std::ios_base::binary);
-		std::string name="phone_syms";
-		fst::FstReadOptions opts(name);
-		fst::Fst<fst::StdArc> * new_decode_fst = fst::Fst<fst::StdArc>::Read(is, opts);
-		if (!new_decode_fst) {
-			throw std::runtime_error("FST decoding graph not read.");
-		}
-		return new_decode_fst;
-	} catch (std::runtime_error& e) {
-
-	}
-  return NULL;
-}
 
 
-template <class Arc, class I>
+template <class Arc>
 inline void MakeByteAcceptor(std::string &input,
                           fst::MutableFst<Arc>* ofst) {
     typedef typename Arc::StateId StateId;
@@ -35,9 +18,9 @@ inline void MakeByteAcceptor(std::string &input,
     StateId cur_state = ofst->AddState();
     ofst->SetStart(cur_state);
     for (int i=0; i<input.size(); i++){
-        int idx = static_cast<int>(input[i]);
+        unsigned char label = input.at(i);
         StateId next_state = ofst->AddState();
-        Arc arc(idx, idx, Weight::One(), next_state);
+        Arc arc(label, label, Weight::One(), next_state);
         ofst->AddArc(cur_state, arc);
         cur_state = next_state;
     }
@@ -50,16 +33,16 @@ inline void MakeByteAcceptor(std::string &input,
 int main(int args, char *argv[]){
     // because thrax fst use one-Byte-char as label
 
-    std::string input_str = "10月4日";
-    std::string fst_path = "";
+    std::string input_str = "十月四日";
+    std::string fst_path = "../cn/ITN";
 
-    auto fst = LoadFst(fst_path);
+
+    fst::Fst<fst::StdArc> * fst = fst::Fst<fst::StdArc>::Read(fst_path);
 
     fst::StringPrinter<fst::StdArc> printer(fst::StringTokenType::BYTE);
-    fst::VectorFst<fst::StdArc> result;
     fst::VectorFst<fst::StdArc> input, output, result;
     
-    MakeByteAcceptor(input_str, &input);
+    MakeByteAcceptor<fst::StdArc>(input_str, &input);
 
     fst::Compose(input, *fst, &result);
 
