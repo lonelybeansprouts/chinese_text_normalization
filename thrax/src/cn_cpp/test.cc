@@ -34,7 +34,7 @@ int main(int args, char *argv[]){
     // because thrax fst use one-Byte-char as label
 
     std::string input_str = "十月四日";
-    std::string fst_path = "../cn/ITN";
+    std::string fst_path = "../cn/ITN.fst";
 
 
     fst::Fst<fst::StdArc> * fst = fst::Fst<fst::StdArc>::Read(fst_path);
@@ -46,10 +46,12 @@ int main(int args, char *argv[]){
 
     fst::Compose(input, *fst, &result);
 
-    fst::Project(&result, fst::PROJECT_OUTPUT);
-
     fst::ShortestPath(result, &output);
+   
+    fst::VectorFst<fst::StdArc> * output_cpy = new fst::VectorFst<fst::StdArc>(output);
 
+    { 
+    fst::Project(&output, fst::PROJECT_OUTPUT);
     // lattice to string
     std::string tmp_str;
     std::string output_str;
@@ -59,6 +61,19 @@ int main(int args, char *argv[]){
     }
 
     std::cout<<output_str<<"\n";
+    }
 
+    { 
+    fst::Project(output_cpy, fst::PROJECT_INPUT);
+    // lattice to string
+    std::string tmp_str;
+    std::string output_str;
+    printer(*output_cpy, &tmp_str);
+    for (unsigned char c: tmp_str) {
+        if (c != 0) output_str += c;
+    }
+
+    std::cout<<output_str<<"\n";
+    }
     return 0;
 }
