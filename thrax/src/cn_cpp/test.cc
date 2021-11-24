@@ -33,22 +33,26 @@ inline void MakeByteAcceptorXX(std::string &input,
                           fst::MutableFst<Arc>* ofst) {
     typedef typename Arc::StateId StateId;
     typedef typename Arc::Weight Weight;
+    
+    unsigned char d = '#';
 
     ofst->DeleteStates();
     StateId cur_state = ofst->AddState();
     ofst->SetStart(cur_state);
     for (int i=0; i<input.size(); i++){
-        if (i>0){
+        unsigned char label = input.at(i);
+        if (label == d){
             StateId next_state = ofst->AddState();
             ofst->AddArc(cur_state, Arc(0, 0, Weight::One(), next_state));
-            ofst->AddArc(cur_state, Arc('#', '#', -0.0000001, next_state));
+            ofst->AddArc(cur_state, Arc((unsigned char)('|'), (unsigned char)('|'), -0.00001, next_state));
             cur_state = next_state;
-        }
-        unsigned char label = input.at(i);
-        StateId next_state = ofst->AddState();
-        Arc arc(label, label, Weight::One(), next_state);
-        ofst->AddArc(cur_state, arc);
-        cur_state = next_state;
+        }else{
+          unsigned char label = input.at(i);
+          StateId next_state = ofst->AddState();
+          Arc arc(label, label, Weight::One(), next_state);
+          ofst->AddArc(cur_state, arc);
+          cur_state = next_state;
+	}
     }
     ofst->SetFinal(cur_state, Weight::One());
 }
@@ -60,8 +64,8 @@ inline void MakeByteAcceptorXX(std::string &input,
 int main(int args, char *argv[]){
     // because thrax fst use one-Byte-char as label
 
-    std::string input_str = "今天是十一月二十四日吗";
-    std::string fst_path = "../cn/ITN.fst";
+    std::string input_str = "十#乘#十#一#等#于#一#百#一#十#一";
+    std::string fst_path = "../../cn/ITN.fst";
 
 
     fst::Fst<fst::StdArc> * fst = fst::Fst<fst::StdArc>::Read(fst_path);
@@ -69,7 +73,7 @@ int main(int args, char *argv[]){
     fst::StringPrinter<fst::StdArc> printer(fst::StringTokenType::BYTE);
     fst::VectorFst<fst::StdArc> input, output, result;
     
-    MakeByteAcceptor<fst::StdArc>(input_str, &input);
+    MakeByteAcceptorXX<fst::StdArc>(input_str, &input);
 
     fst::Compose(input, *fst, &result);
 
